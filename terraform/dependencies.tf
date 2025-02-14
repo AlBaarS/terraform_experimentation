@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/vsphere"
       version = "2.11.1"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.3"
+    }
   }
 }
 
@@ -22,3 +26,5 @@ provider "vsphere" {
   vsphere_server       = "photon-machine.sogyo.nl"
   allow_unverified_ssl = true
 }
+
+provider "random" {}
