@@ -1,8 +1,9 @@
+# -[Variables upon initialization]---------------------------------------------
 variable "hosts" {
   default = 2
 }
 
-variable "password" {
-    type = string
-    default = random_password.password.result
+# -[Variables filled in later]-------------------------------------------------
+locals {
+    password = random_password.password.result
 }
