@@ -10,8 +10,8 @@ resource "random_password" "password" {
 resource "vsphere_virtual_machine" "vm" {
   # Base settings
   name             = format("mancala%02d", count.index + 1)
-  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
-  datastore_id     = data.vsphere_datastore.datastore.id
+  resource_pool_id = data.vsphere_resource_pool.on-prem-kubernetes.id
+  datastore_id     = data.vsphere_datastore.vs1_hpe_raid10.id
   num_cpus         = 2
   memory           = 2048
   guest_id         = "mancala"
@@ -55,7 +55,7 @@ resource "vsphere_virtual_machine" "vm" {
 
       # Contains a newline seperated string containing an SSH public key that is allowed
       # to login into the 'ubuntu' user. Format matches authorized_keys files.
-      public-keys = "ssh-ed25519 ${PUBLIC_KEY} abaars@sogyo.nl"
+      public-keys = "ssh-ed25519 ${var.PUBLIC_KEY} abaars@sogyo.nl"
 
       # User data contains a cloud-init configuration file. This file is passed to the template
       # where cloud-init runs at first boot and can modify default users/software etc
