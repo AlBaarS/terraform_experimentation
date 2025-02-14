@@ -36,8 +36,11 @@ resource "vsphere_virtual_machine" "vm" {
   }
 
   network_interface {
-    network_id = data.vsphere_network.network.id
+    network_id     = data.vsphere_network.vm_network.id
+    mac_address    = format("00:50:56:3f:3e:%02x", count.index + 1)
+    use_static_mac = true
   }
+
 
   disk {
     label = "Hard Disk 1"
