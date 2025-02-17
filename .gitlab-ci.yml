@@ -49,7 +49,7 @@ terraform-plan:
   script:
     - cd "${TF_ROOT}"
     - terraform init -input=false -reconfigure $TF_VARS && terraform plan -input=false -out=plan.cache $TF_VARS
-    - terraform show $TF_VARS --json plan.cache | convert_report > plan.json
+    - terraform show --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
     paths:
