@@ -9,7 +9,7 @@ cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
   key: "$CI_COMMIT_SHA"
   paths:
-    - terraform/.terraform
+    - ${TF_ROOT}/.terraform
 
 stages:
   - terraform-validate
