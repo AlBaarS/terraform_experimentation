@@ -44,7 +44,7 @@ resource "vsphere_virtual_machine" "vm" {
 
   disk {
     label = "Hard Disk 1"
-    size  = 20
+    size  = 25
   }
   
   vapp {
