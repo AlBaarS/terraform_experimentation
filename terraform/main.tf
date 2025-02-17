@@ -14,7 +14,7 @@ resource "vsphere_virtual_machine" "vm" {
   datastore_id     = data.vsphere_datastore.vs1_hpe_raid10.id
   num_cpus         = 2
   memory           = 2048
-  guest_id         = "mancala"
+  guest_id         = "ubuntu64Guest"
   count            = var.hosts
 
   # We want to make a clone of the Ubuntu 22.04 LTS Cloud Image Template
