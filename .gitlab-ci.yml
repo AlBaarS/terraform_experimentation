@@ -15,7 +15,7 @@ stages:
   - terraform-validate
   - terraform-plan
   - terraform-apply
-  # - ansible
+  - ansible
   - terraform-destroy
 
 
