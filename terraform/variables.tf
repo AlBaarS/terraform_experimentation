@@ -18,6 +18,11 @@ variable "vsphere_pw" {
   sensitive = true
 }
 
+variable "gitlab_token" {
+  type = string
+  sensitive = true
+}
+
 # -[Variables filled in later]-------------------------------------------------
 locals {
   password = random_password.password.result

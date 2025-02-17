@@ -1,6 +1,6 @@
 variables:
   TF_ROOT: ${CI_PROJECT_DIR}/terraform
-  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD" 
+  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=gitlab_token=$GITLAB_ACCESS_TOKEN" 
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine:3.21.2
