@@ -12,6 +12,6 @@ terraform {
     unlock_method   = "DELETE"
     retry_wait_min  = "5"
     username        = "abaars"
-    password        = var.gitlab_token
+    password        = "${GITLAB_ACCESS_TOKEN}"
   }
 }
