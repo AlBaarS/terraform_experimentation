@@ -23,7 +23,7 @@ data "vsphere_network" "vm_network" {
 
 # The Resource Pool we will deploy to
 data "vsphere_resource_pool" "on-prem-kubernetes" {
-  name          = "Kubernetes On-Prem"
+  name          = "Daan"
   datacenter_id = data.vsphere_datacenter.boerderij.id
 }
 
