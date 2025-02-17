@@ -5,7 +5,7 @@ variables:
   DOCKER_ALP: alpine:3.21.2
   TF_VARS: "-var=public_key=$TF_VAR_public_key" 
 
-  #-var=vmsphere_user=$VMSPHERE_USER -var=vmsphere_pw=$VMSPHERE_PASSWORD"
+#  -var=vmsphere_user=$VMSPHERE_USER -var=vmsphere_pw=$VMSPHERE_PASSWORD
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
