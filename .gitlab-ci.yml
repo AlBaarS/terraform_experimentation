@@ -1,11 +1,9 @@
 variables:
   TF_ROOT: ${CI_PROJECT_DIR}/terraform
+  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD" 
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine:3.21.2
-  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD" 
-
-#  -var=vmsphere_user=$VMSPHERE_USER -var=vmsphere_pw=$VMSPHERE_PASSWORD
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
@@ -17,7 +15,7 @@ stages:
   - terraform-validate
   - terraform-plan
   - terraform-apply
-  # - ansible
+  - ansible
   - terraform-destroy
 
 
@@ -34,7 +32,7 @@ terraform-validate:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
       when: never
-    - if: $CI_COMMIT_BRANCH  
+    - if: $CI_COMMIT_BRANCH
 
 
 # This step creates the plan of action to set up the VMs
@@ -85,8 +83,21 @@ terraform-apply:
 
 
 # This step deploys our application on the respective VMs
-
-
+ansible:
+  stage: ansible
+  image:
+    name: $DOCKER_ALP
+    entrypoint: [""]
+  script:
+    - echo "tmp"
+  resource_group: default
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
 
 
 # This step adds a manual pipeline step to destroy the deployed VMs
