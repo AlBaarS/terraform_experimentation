@@ -8,15 +8,15 @@ variable "public_key" {
   sensitive = true
 }
 
-variable "vmsphere_user" {
-  type = string
-  sensitive = true
-}
+# variable "vmsphere_user" {
+#   type = string
+#   sensitive = true
+# }
 
-variable "vmsphere_pw" {
-  type = string
-  sensitive = true
-}
+# variable "vmsphere_pw" {
+#   type = string
+#   sensitive = true
+# }
 
 # -[Variables filled in later]-------------------------------------------------
 locals {
