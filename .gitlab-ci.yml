@@ -3,6 +3,7 @@ variables:
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine:3.21.2
+  TF_VARS: -var="public_key=$TF_VAR_public_key" -var="vmsphere_user=$VMSPHERE_USER" -var="vmsphere_pw=$VMSPHERE_PASSWORD"
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
@@ -45,8 +46,8 @@ terraform-plan:
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
     - cd "${TF_ROOT}"
-    - terraform init -input=false -reconfigure -var="public_key=$TF_VAR_public_key" && terraform plan -input=false -out=plan.cache -var="public_key=$TF_VAR_public_key"
-    - terraform show -var="public_key=$TF_VAR_public_key" --json plan.cache | convert_report > plan.json
+    - terraform init -input=false -reconfigure $TF_VARS && terraform plan -input=false -out=plan.cache $TF_VARS
+    - terraform show $TF_VARS --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
     paths:

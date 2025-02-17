@@ -21,8 +21,8 @@ provider "vsphere" {
   # We expect the username and password to come from enviroment variables
   # VSPHERE_USER
   # VSPHERE_PASSWORD
-  user                 = ""
-  password             = ""
+  user                 = var.vmsphere_user
+  password             = var.vmsphere_pw
   vsphere_server       = "photon-machine.sogyo.nl"
   allow_unverified_ssl = true
 }
