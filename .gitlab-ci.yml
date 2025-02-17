@@ -1,0 +1,84 @@
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}/terraform
+  ANS_ROOT: ${CI_PROJECT_DIR}/ansible
+  DOCKER_TF: hashicorp/terraform:1.10.5
+  DOCKER_ALP: alpine:3.21.2
+  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD" 
+
+#  -var=vmsphere_user=$VMSPHERE_USER -var=vmsphere_pw=$VMSPHERE_PASSWORD
+
+cache:
+  # Only cache the .terraform folder across each job in this pipeline for the same commit
+  key: "$CI_COMMIT_SHA"
+  paths:
+    - terraform/.terraform
+
+stages:
+  - terraform-validate
+  - terraform-plan
+  - terraform-apply
+  # - ansible
+  # - terraform-destroy
+
+
+
+terraform-validate:
+  stage: terraform-validate
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  script:
+    - cd "${TF_ROOT}"
+    - terraform init -input=false -reconfigure && terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $CI_COMMIT_BRANCH  
+
+
+
+terraform-plan:
+  stage: terraform-plan
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  before_script:
+    - apk --no-cache add jq
+    - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  script:
+    - cd "${TF_ROOT}"
+    - terraform init -input=false -reconfigure $TF_VARS && terraform plan -input=false -out=plan.cache $TF_VARS
+    - terraform show --json plan.cache | convert_report > plan.json
+  resource_group: default
+  artifacts:
+    paths:
+      - ${TF_ROOT}/plan.cache
+    reports:
+      terraform: ${TF_ROOT}/plan.json
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $CI_COMMIT_BRANCH        # If there's no open merge request, add it to a *branch* pipeline instead.
+
+
+
+terraform-apply:
+  stage: terraform-apply
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  dependencies:
+  - terraform-plan
+  script:
+    - cd "${TF_ROOT}"
+    - terraform init -input=false -reconfigure && terraform apply -input=false plan.cache
+  resource_group: default
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
