@@ -45,8 +45,8 @@ terraform-plan:
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
     - cd "${TF_ROOT}"
-    - terraform init -input=false -reconfigure -var=$TF_VAR_public_key && terraform plan -input=false -out=plan.cache -var=$TF_VAR_public_key
-    - terraform show -var=$TF_VAR_public_key --json plan.cache | convert_report > plan.json
+    - terraform init -input=false -reconfigure -var="public_key=$TF_VAR_public_key" && terraform plan -input=false -out=plan.cache -var="public_key=$TF_VAR_public_key"
+    - terraform show -var="public_key=$TF_VAR_public_key" --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
     paths:
