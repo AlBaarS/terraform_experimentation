@@ -18,10 +18,10 @@ stages:
   - terraform-plan
   - terraform-apply
   # - ansible
-  # - terraform-destroy
+  - terraform-destroy
 
 
-
+# This step validates the terraform files themselves
 terraform-validate:
   stage: terraform-validate
   image:
@@ -37,7 +37,7 @@ terraform-validate:
     - if: $CI_COMMIT_BRANCH  
 
 
-
+# This step creates the plan of action to set up the VMs
 terraform-plan:
   stage: terraform-plan
   image:
@@ -65,7 +65,7 @@ terraform-plan:
     - if: $CI_COMMIT_BRANCH        # If there's no open merge request, add it to a *branch* pipeline instead.
 
 
-
+# This step adds a manual pipeline step to deploy the VMs
 terraform-apply:
   stage: terraform-apply
   image:
@@ -81,4 +81,24 @@ terraform-apply:
     - if: $DESTROY_ENABLED
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+
+
+# This step deploys our application on the respective VMs
+
+
+
+
+# This step adds a manual pipeline step to destroy the deployed VMs
+terraform-destroy:
+  stage: terraform-destroy
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  script:
+    - cd "${TF_ROOT}"
+    - terraform init -input=false -reconfigure && terraform destroy -input=false -auto-approve
+  resource_group: default
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DESTROY_ENABLED
       when: manual
