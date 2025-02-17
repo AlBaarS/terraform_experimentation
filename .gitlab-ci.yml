@@ -46,7 +46,7 @@ terraform-plan:
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
     - cd "${TF_ROOT}"
-    - terraform init -input=false -reconfigure $TF_VARS && terraform plan -input=false -out=plan.cache $TF_VARS
+    - terraform init -input=false -reconfigure && terraform plan -input=false -out=plan.cache $TF_VARS
     - terraform show --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
@@ -108,7 +108,7 @@ terraform-destroy:
     entrypoint: [""]
   script:
     - cd "${TF_ROOT}"
-    - terraform init -input=false -reconfigure && terraform destroy -input=false -auto-approve
+    - terraform init -input=false -reconfigure && terraform destroy $TF_VARS -input=false -auto-approve
   resource_group: default
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DESTROY_ENABLED
