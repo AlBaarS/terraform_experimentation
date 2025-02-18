@@ -3,7 +3,7 @@ variables:
   TF_VARS: "-var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD" 
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
-  DOCKER_ALP: alpine:3.21.2
+  DOCKER_ALP: alpine/ansible:2.18.1
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
