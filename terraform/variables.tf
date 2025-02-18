@@ -7,13 +7,11 @@ variable "hosts" {
 variable "public_key" {
   type = string
   sensitive = true
-  ephemeral = true
 }
 
 variable "email" {
   type = string
   sensitive = true
-  ephemeral = true
 }
 
 variable "vsphere_user" {
