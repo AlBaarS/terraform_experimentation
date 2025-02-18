@@ -3,6 +3,7 @@ variable "hosts" {
   default = 2
 }
 
+# -[Input variables]-----------------------------------------------------------
 variable "public_key" {
   type = string
   sensitive = true
@@ -18,12 +19,7 @@ variable "vsphere_pw" {
   sensitive = true
 }
 
-variable "gitlab_token" {
+variable "email" {
   type = string
   sensitive = true
-}
-
-# -[Variables filled in later]-------------------------------------------------
-locals {
-  password = random_password.password.result
 }
