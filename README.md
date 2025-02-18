@@ -1,93 +1,63 @@
-# Mancala terraform
+# Mancala terraform ![status](https://git.sogyo.nl/abaars/mancala-terraform/badges/main/pipeline.svg?ignore_skipped=true)
 
+## What is this project for?
 
+This project is made by me (Alejandro Baars) as I discover how to work with terraform. Here, I will try to document my findings for myself and (possibly) those that come after me. I may have missed some details, for which I will apologize in advance.
 
-## Getting started
+## What does this project do?
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+It launches two virtual machines (Ubuntu 22.04) on Daan's VSphere instance. That's it, so far. The goal is to deploy my (abysmal) Mancala implementation on those machines.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## What do I need to know to understand this project?
 
-## Add your files
+You need basic knowledge of Terraform, VSphere, and Gitlab CI/CD (including variables).
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## What do the components in the project do?
 
-```
-cd existing_repo
-git remote add origin https://git.sogyo.nl/abaars/mancala-terraform.git
-git branch -M main
-git push -uf origin main
-```
+The meat and bones of this README - a summary of my findings so far. Each file already has its
+own documentation as to what each part does. Here, in the README, I will quickly summarize what
+each script does and what environment variables need to be set (and when).
 
-## Integrate with your tools
+### Gitlab-ci.yml
 
-- [ ] [Set up project integrations](https://git.sogyo.nl/abaars/mancala-terraform/-/settings/integrations)
+This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. The first two stages,
+terraform-validate and terraform-plan, are triggered automatically, as they take care of validation and preperation. The next stages only trigger on the 'main' branch. terraform-apply has a manual trigger in gitlab which you can access in the pipelines overview. The subsequent ansible step follows when the terraform-apply step has completed.
 
-## Collaborate with your team
+The final step, terraform-destroy, is not triggered automatically. This step only triggers when the environment variable "$DESTROY_ENABLED" is set to true. **Do not** include this variable as a standard variable. Instead, create a new pipeline in the
+gitlab pipeline overview and add the variable there. With this variable, gitlab will only run the terraform-validate and terraform-destroy steps.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), and a public key to enable connecting to your VMs. You need the following environment variables with their respective values:
 
-## Test and Deploy
+* **TF_VAR_public_key** --> the public key. Can be found in your home directory on linux under `.ssh/id_ed25519.pub`. In this variable, you must only include the middle part of random numbers and letters.
 
-Use the built-in continuous integration in GitLab.
+* **TF_VAR_email** --> your e-mail, which is passed as part of the public key.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+* **VSPHERE_USER** --> your VSphere user name.
 
-***
+* **VSPHERE_PASSWORD** --> your VSphere password.
 
-# Editing this README
+* **GITLAB_ACCESS_TOKEN** --> A gitlab access token with API access only.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+All variables must be **Masked and Hidden** and only run on **Protected** branches. This means that they will be unavailable when you test things on a testing branch. Make sure to mark your testing branches as **Protected** as well to keep your information secure.
 
-## Suggestions for a good README
+### Terraform
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+#### backend.tf
 
-## Name
-Choose a self-explaining name for your project.
+This script configures saving the state of the VM's launched by Terraform. Gitlab has a built-in API to store, read, destroy, etc. which we use. There are ways to store the statefiles in a different location though, if that is your wish.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+#### datasources.tf
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+This script collects the necessary data for Terraform to function. It contains the configuration to connect to the correct VSphere instance (the one on the farm), but also configures the network it attaches the VMs to and the Kubernetes instance it is hosted on. Finally, it also provided the Ubuntu image used to construct the VMs.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+#### dependencies.tf
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+This script lists and configures the required Terraform providers (VSphere and random).
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+#### main.tf
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+This script brings the loose elements together. It creates a random password (which is not stored for security) and creates the VMs based on the set criteria (OS, guest user, resources, etc.).
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+#### variables.tf
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This script takes care of the variables used by Terraform. Most of these do not have a default, as they are set using the '-var' command-line flag. It also
