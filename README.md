@@ -21,9 +21,7 @@ each script does and what environment variables need to be set (and when).
 ### Gitlab-ci.yml
 
 This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. The first two stages,
-terraform-validate and terraform-plan, are triggered automatically, as they take care of validation and preperation. The next stage,
-terraform-apply, has a manual trigger in gitlab which you can access in the pipelines overview. The subsequent ansible step follows
-when the terraform-apply step has completed.
+terraform-validate and terraform-plan, are triggered automatically, as they take care of validation and preperation. The next stages only trigger on the 'main' branch. terraform-apply has a manual trigger in gitlab which you can access in the pipelines overview. The subsequent ansible step follows when the terraform-apply step has completed.
 
 The final step, terraform-destroy, is not triggered automatically. This step only triggers when the environment variable "$DESTROY_ENABLED" is set to true. **Do not** include this variable as a standard variable. Instead, create a new pipeline in the
 gitlab pipeline overview and add the variable there. With this variable, gitlab will only run the terraform-validate and terraform-destroy steps.
