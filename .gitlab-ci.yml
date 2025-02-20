@@ -49,6 +49,7 @@ terraform-plan:
     - cd "${TF_ROOT}"
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VARS
     - terraform show --json plan.cache | convert_report > plan.json
+  allow_failure: true # Terraform cannot find the secret as it's not made yet, so it fails
   resource_group: default
   artifacts:
     paths:
