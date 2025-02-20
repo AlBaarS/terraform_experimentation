@@ -1,6 +1,8 @@
 variables:
-  TF_ROOT: ${CI_PROJECT_DIR}/terraform
-  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infiscal_client_id=$INFISCAL_CID -var=infiscal_client_secret=$INFISCAL_CS"
+  TF_PW_CREATION_ROOT: ${CI_PROJECT_DIR}/set_password
+  TF_VM_CREATION_ROOT: ${CI_PROJECT_DIR}/create_vms
+  TF_PW_VARS: -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
+  TF_VM_VARS: -var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine/ansible:2.18.1
@@ -9,36 +11,41 @@ cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
   key: "$CI_COMMIT_SHA"
   paths:
-    - terraform/.terraform
+    - create_vms/.terraform
 
 stages:
-  - terraform-validate
-  - terraform-plan
-  - terraform-apply
+  - terraform-pw-validate
+  - terraform-pw-plan
+  - terraform-pw-apply
+  - terraform-vm-validate
+  - terraform-vm-plan
+  - terraform-vm-apply
   - ansible
-  - terraform-destroy
+  - terraform-vm-destroy
 
 
-# This step validates the terraform files themselves
-terraform-validate:
-  stage: terraform-validate
+
+# This step validates the terraform files of the password creation process
+terraform-pw-validate:
+  stage: terraform-pw-validate
   image:
     name: $DOCKER_TF
     entrypoint: [""]
   script:
-    - cd "${TF_ROOT}"
+    - cd "${TF_PW_CREATION_ROOT}"
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform validate
   rules:
+    - if: $DESTROY_ENABLED
+      when: never
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
     - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
       when: never
-    - if: $CI_COMMIT_BRANCH
+    - if: $PASSWORD_CREATION
 
-
-# This step creates the plan of action to set up the VMs
-terraform-plan:
-  stage: terraform-plan
+# This step creates the plan of action to create and store the passwords in the Infisical vault
+terraform-pw-plan:
+  stage: terraform-pw-plan
   image:
     name: $DOCKER_TF
     entrypoint: [""]
@@ -46,16 +53,15 @@ terraform-plan:
     - apk --no-cache add jq
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
-    - cd "${TF_ROOT}"
-    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VARS
+    - cd "${TF_PW_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_PW_VARS
     - terraform show --json plan.cache | convert_report > plan.json
-  allow_failure: true # Terraform cannot find the secret as it's not made yet, so it fails
   resource_group: default
   artifacts:
     paths:
-      - ${TF_ROOT}/plan.cache
+      - ${TF_PW_CREATION_ROOT}/plan.cache
     reports:
-      terraform: ${TF_ROOT}/plan.json
+      terraform: ${TF_PW_CREATION_ROOT}/plan.json
   rules:
     - if: $DESTROY_ENABLED
       when: never
@@ -63,23 +69,93 @@ terraform-plan:
       when: never
     - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
       when: never
-    - if: $CI_COMMIT_BRANCH        # If there's no open merge request, add it to a *branch* pipeline instead.
+    - if: $PASSWORD_CREATION
 
-
-# This step adds a manual pipeline step to deploy the VMs
-terraform-apply:
-  stage: terraform-apply
+# This step adds a manual pipeline step to create and store the VM password
+terraform-pw-apply:
+  stage: terraform-pw-apply
   image:
     name: $DOCKER_TF
     entrypoint: [""]
   dependencies:
-  - terraform-plan
+  - terraform-pw-plan
   script:
-    - cd "${TF_ROOT}"
-    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_VARS -input=false plan.cache
+    - cd "${TF_PW_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_PW_VARS -input=false plan.cache
   resource_group: default
   rules:
     - if: $DESTROY_ENABLED
+      when: never
+    - if: $PASSWORD_CREATION
+      when: manual
+
+
+# This step validates the terraform files of the VM creation process
+terraform-vm-validate:
+  stage: terraform-vm-validate
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  script:
+    - cd "${TF_VM_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $PASSWORD_CREATION
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+
+# This step creates the plan of action to set up the VMs
+terraform-vm-plan:
+  stage: terraform-vm-plan
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  before_script:
+    - apk --no-cache add jq
+    - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  script:
+    - cd "${TF_VM_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VM_VARS
+    - terraform show --json plan.cache | convert_report > plan.json
+  resource_group: default
+  artifacts:
+    paths:
+      - ${TF_VM_CREATION_ROOT}/plan.cache
+    reports:
+      terraform: ${TF_VM_CREATION_ROOT}/plan.json
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $PASSWORD_CREATION
+      when: never
+    - if: $CI_COMMIT_BRANCH        # If there's no open merge request, add it to a *branch* pipeline instead.
+
+
+# This step adds a manual pipeline step to deploy the VMs
+terraform-vm-apply:
+  stage: terraform-vm-apply
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  dependencies:
+  - terraform-vm-plan
+  script:
+    - cd "${TF_VM_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_VM_VARS -input=false plan.cache
+  resource_group: default
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $PASSWORD_CREATION
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
@@ -101,19 +177,23 @@ ansible:
       when: never
     - if: $CI_OPEN_MERGE_REQUESTS
       when: never
+    - if: $PASSWORD_CREATION
+      when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 
 # This step adds a manual pipeline step to destroy the deployed VMs
-terraform-destroy:
-  stage: terraform-destroy
+terraform-vm-destroy:
+  stage: terraform-vm-destroy
   image:
     name: $DOCKER_TF
     entrypoint: [""]
   script:
-    - cd "${TF_ROOT}"
-    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform destroy $TF_VARS -input=false -auto-approve
+    - cd "${TF_VM_CREATION_ROOT}"
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform destroy $TF_VM_VARS -input=false -auto-approve
   resource_group: default
   rules:
+    - if: $PASSWORD_CREATION
+      when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DESTROY_ENABLED
       when: manual
