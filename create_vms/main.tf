@@ -64,5 +64,5 @@ resource "vsphere_virtual_machine" "vm" {
 }
 
 output "ipv4" {
-  value = unsensitive(vsphere_virtual_machine.vm)
+  value = nonsensitive(vsphere_virtual_machine.vm)
 }
