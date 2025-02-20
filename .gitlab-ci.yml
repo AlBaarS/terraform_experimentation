@@ -9,7 +9,10 @@ variables:
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
-  key: "$CI_COMMIT_SHA"
+  key: ${CI_COMMIT_SHA}-pw
+  paths:
+    - set_password/.terraform
+  key: ${CI_COMMIT_SHA}-vm
   paths:
     - create_vms/.terraform
 
