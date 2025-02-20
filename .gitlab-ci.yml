@@ -2,7 +2,7 @@ variables:
   TF_PW_CREATION_ROOT: ${CI_PROJECT_DIR}/set_password
   TF_VM_CREATION_ROOT: ${CI_PROJECT_DIR}/create_vms
   TF_PW_VARS: -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
-  TF_VM_VARS: -var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infiscal_client_id=$INFISICAL_CID -var=infiscal_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
+  TF_VM_VARS: -var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine/ansible:2.18.1
