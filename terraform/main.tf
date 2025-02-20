@@ -27,6 +27,8 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id         = "ubuntu64Guest"  # this cannot be changed to a different name, sadly
   count            = var.hosts
 
+  depends_on = ["resource.infisical_secret.store-mancala-secret"]
+
   # We want to make a clone of the Ubuntu 22.04 LTS Cloud Image Template
   clone {
     template_uuid = data.vsphere_virtual_machine.ubuntu-2204-cloudimg-template.id
