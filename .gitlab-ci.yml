@@ -53,7 +53,7 @@ terraform-pw-plan:
     - apk --no-cache add jq
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
-    - cd "${TF_VM_CREATION_ROOT}"
+    - cd "${TF_PW_CREATION_ROOT}"
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_PW_VARS
     - terraform show --json plan.cache | convert_report > plan.json
   resource_group: default
