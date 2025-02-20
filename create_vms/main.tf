@@ -62,12 +62,3 @@ resource "vsphere_virtual_machine" "vm" {
     }
   }
 }
-
-# Store the password in the infiscal cloud (it gets deleted after initial use, apparently)
-resource "infisical_secret" "store-mancala-secret" {
-  name         = "MANCALA_PW"
-  value        = data.infisical_secrets.common_secrets.secrets["MANCALA_PW"].value
-  env_slug     = "dev"
-  workspace_id = var.infisical_workspace_id
-  folder_path  = "/"
-}
