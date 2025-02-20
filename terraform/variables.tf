@@ -26,7 +26,14 @@ variable "vsphere_pw" {
   ephemeral = true
 }
 
-# -[Local variables]-----------------------------------------------------------
-locals {
-  password = random_password.password.result
+variable "infiscal_client_id" {
+  type = string
+  sensitive = true
+  ephemeral = true
+}
+
+variable "infiscal_client_secret" {
+  type = string
+  sensitive = true
+  ephemeral = true
 }
