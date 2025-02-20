@@ -38,6 +38,6 @@ data "vsphere_virtual_machine" "ubuntu-2204-cloudimg-template" {
 # Datasource to extract secrets from Infiscal
 data "infisical_secrets" "common_secrets" {
   env_slug     = "dev"
-  workspace_id = "261219c8-bf78-4482-bf9f-d7c06b4d6cb0"
+  workspace_id = var.infisical_workspace_id
   folder_path  = "/"
 }

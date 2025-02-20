@@ -6,10 +6,6 @@ terraform {
       source  = "hashicorp/vsphere"
       version = "2.11.1"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "3.6.3"
-    }
     infisical = {
       source = "infisical/infisical"
       version = "0.14.0"
@@ -32,15 +28,13 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-provider "random" {}
-
 provider "infisical" {
   # host is only required if using self hosted instance of Infisical, default is https://app.infisical.com
   host = "https://app.infisical.com" 
   auth = {
     universal = {
-      client_id     = var.infiscal_client_id
-      client_secret = var.infiscal_client_secret
+      client_id     = var.infisical_client_id
+      client_secret = var.infisical_client_secret
     }
   }
 }
