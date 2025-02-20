@@ -75,7 +75,7 @@ terraform-apply:
   - terraform-plan
   script:
     - cd "${TF_ROOT}"
-    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply -input=false plan.cache
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply -input=false TF_VARS plan.cache
   resource_group: default
   rules:
     - if: $DESTROY_ENABLED
