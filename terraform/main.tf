@@ -27,7 +27,8 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id         = "ubuntu64Guest"  # this cannot be changed to a different name, sadly
   count            = var.hosts
 
-  depends_on = [resource.infisical_secret.store-mancala-secret]
+  # Explicitly state the dependencies so the password is created and stored before it is retrieved
+  depends_on = [resource.infisical_secret.store-mancala-secret, resource.random_password.password]
 
   # We want to make a clone of the Ubuntu 22.04 LTS Cloud Image Template
   clone {
