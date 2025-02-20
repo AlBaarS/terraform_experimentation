@@ -64,5 +64,5 @@ resource "vsphere_virtual_machine" "vm" {
 }
 
 output "ipv4" {
-    value= vsphere_virtual_machine.vm.guest_ip_addresses
+    value= vsphere_virtual_machine.vm[count.index]
 }
