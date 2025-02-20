@@ -1,6 +1,6 @@
 variables:
   TF_ROOT: ${CI_PROJECT_DIR}/terraform
-  TF_VARS: -var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infiscal_client_id=$INFISCAL_CID -var=infiscal_client_secret=$INFISCAL_CS
+  TF_VARS: "-var=public_key=$TF_VAR_public_key -var=email=$TF_VAR_email -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infiscal_client_id=$INFISCAL_CID -var=infiscal_client_secret=$INFISCAL_CS"
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
   DOCKER_ALP: alpine/ansible:2.18.1
