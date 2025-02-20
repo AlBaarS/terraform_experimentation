@@ -9,17 +9,31 @@ variable "public_key" {
   sensitive = true
 }
 
+variable "email" {
+  type = string
+  sensitive = true
+}
+
 variable "vsphere_user" {
   type = string
   sensitive = true
+  ephemeral = true
 }
 
 variable "vsphere_pw" {
   type = string
   sensitive = true
+  ephemeral = true
 }
 
-variable "email" {
+variable "infiscal_client_id" {
   type = string
   sensitive = true
+  ephemeral = true
+}
+
+variable "infiscal_client_secret" {
+  type = string
+  sensitive = true
+  ephemeral = true
 }
