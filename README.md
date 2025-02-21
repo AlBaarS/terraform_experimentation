@@ -44,11 +44,17 @@ The destruction of the existing infrastructure will remove the terraform state f
 
 #### Authentification through environment variables
 
-You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), and a public key to enable connecting to your VMs. You need the following environment variables with their respective values:
+You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), Infisical (to access your VM password and IPs), and a public key to enable connecting to your VMs. You need the following environment variables with their respective values:
 
 * **TF_VAR_public_key** --> the public key. Can be found in your home directory on linux under `.ssh/id_ed25519.pub`. In this variable, you must only include the middle part of random numbers and letters.
 
 * **TF_VAR_email** --> your e-mail, which is passed as part of the public key.
+
+* **INFISICAL_CID** --> your Infisical Universal Auth client ID
+
+* **INFISICAL_CS** --> your Infisical Universal Auth client secret
+
+* **INFISICAL_PID** --> your Infisical project ID
 
 * **VSPHERE_USER** --> your VSphere user name.
 
@@ -70,7 +76,7 @@ This script collects the necessary data for Terraform to function. It contains t
 
 #### dependencies.tf
 
-This script lists and configures the required Terraform providers (VSphere and random).
+This script lists and configures the required Terraform providers (VSphere, random, and Infisical).
 
 #### main.tf
 
@@ -78,4 +84,4 @@ This script brings the loose elements together. It creates a random password (wh
 
 #### variables.tf
 
-This script takes care of the variables used by Terraform. Most of these do not have a default, as they are set using the '-var' command-line flag. It also
+This script takes care of the variables used by Terraform. Most of these do not have a default, as they are set using the '-var' command-line flag by gitlab-ci.yml.
