@@ -63,6 +63,10 @@ resource "vsphere_virtual_machine" "vm" {
   }
 }
 
-output "ipv4" {
-  value = nonsensitive(vsphere_virtual_machine.vm)
+resource "infisical_secret" "store-ip-secret" {
+  name         = "MANCALA_IPS"
+  value        = vsphere_virtual_machine.vm
+  env_slug     = "dev"
+  workspace_id = var.infisical_workspace_id
+  folder_path  = "/"
 }
