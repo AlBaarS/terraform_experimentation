@@ -64,8 +64,9 @@ resource "vsphere_virtual_machine" "vm" {
 }
 
 resource "infisical_secret" "store-ip-secret" {
+  count        = var.hosts
   name         = format("MANCALA_IP_%02d", count.index)
-  value        = vsphere_virtual_machine.vm[0]
+  value        = vsphere_virtual_machine.vm[count.index]
   env_slug     = "dev"
   workspace_id = var.infisical_workspace_id
   folder_path  = "/"
