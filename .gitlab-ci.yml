@@ -23,12 +23,11 @@ stages:
   - terraform-vm-validate
   - terraform-vm-plan
   - terraform-vm-apply
-  - ansible
   - terraform-vm-destroy
 
 
 
-# This step validates the terraform files of the password creation process
+# [Requires $PASSWORD_CREATION] - This step validates the terraform files of the password creation process
 terraform-pw-validate:
   stage: terraform-pw-validate
   image:
@@ -46,7 +45,7 @@ terraform-pw-validate:
       when: never
     - if: $PASSWORD_CREATION
 
-# This step creates the plan of action to create and store the passwords in the Infisical vault
+# [Requires $PASSWORD_CREATION] - This step creates the plan of action to create and store the passwords in the Infisical vault
 terraform-pw-plan:
   stage: terraform-pw-plan
   image:
@@ -74,7 +73,7 @@ terraform-pw-plan:
       when: never
     - if: $PASSWORD_CREATION
 
-# This step adds a manual pipeline step to create and store the VM password
+# [Requires $PASSWORD_CREATION] - This step adds a manual pipeline step to create and store the VM password
 terraform-pw-apply:
   stage: terraform-pw-apply
   image:
@@ -164,28 +163,7 @@ terraform-vm-apply:
       when: manual
 
 
-# This step deploys our application on the respective VMs
-ansible:
-  stage: ansible
-  image:
-    name: $DOCKER_ALP
-    entrypoint: [""]
-  script:
-    - echo "tmp"
-  resource_group: default
-  rules:
-    - if: $DESTROY_ENABLED
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $CI_OPEN_MERGE_REQUESTS
-      when: never
-    - if: $PASSWORD_CREATION
-      when: never
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-
-# This step adds a manual pipeline step to destroy the deployed VMs
+# [Requires $DESTROY_ENABLED] - This step adds a manual pipeline step to destroy the deployed VMs
 terraform-vm-destroy:
   stage: terraform-vm-destroy
   image:

@@ -2,29 +2,47 @@
 
 ## What is this project for?
 
-This project is made by me (Alejandro Baars) as I discover how to work with terraform. Here, I will try to document my findings for myself and (possibly) those that come after me. I may have missed some details, for which I will apologize in advance.
+This project is made by me (Alejandro Baars) as I discover how to work with terraform. Here, I will try to document my findings for myself and (possibly) those that come after me. I may have missed some details, for which I apologize.
 
 ## What does this project do?
 
 It launches two virtual machines (Ubuntu 22.04) on Daan's VSphere instance. That's it, so far. The goal is to deploy my (abysmal) Mancala implementation on those machines.
 
-## What do I need to know to understand this project?
+## What do you need to know to understand this project?
 
 You need basic knowledge of Terraform, VSphere, and Gitlab CI/CD (including variables).
 
 ## What do the components in the project do?
 
-The meat and bones of this README - a summary of my findings so far. Each file already has its
-own documentation as to what each part does. Here, in the README, I will quickly summarize what
-each script does and what environment variables need to be set (and when).
+The meat and bones of this README - a summary of my findings so far. Each file already has its own documentation as to what each part does. Here, in the README, I will quickly summarize what each script does and what environment variables need to be set (and when).
 
 ### Gitlab-ci.yml
 
-This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. The first two stages,
-terraform-validate and terraform-plan, are triggered automatically, as they take care of validation and preperation. The next stages only trigger on the 'main' branch. terraform-apply has a manual trigger in gitlab which you can access in the pipelines overview. The subsequent ansible step follows when the terraform-apply step has completed.
+This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. It contains three pipelines in one; one that creates and stores a password in an Infisical vault, one that creates and launches the virtual machines on Daan's cluster, and one to tear the existing infrastructure down.
 
-The final step, terraform-destroy, is not triggered automatically. This step only triggers when the environment variable "$DESTROY_ENABLED" is set to true. **Do not** include this variable as a standard variable. Instead, create a new pipeline in the
-gitlab pipeline overview and add the variable there. With this variable, gitlab will only run the terraform-validate and terraform-destroy steps.
+#### Password creation
+
+The first part of the pipeline creates and stores a secure password for you. It consists of the terraform-pw-validate, terraform-pw-plan, and terraform-pw-apply steps. These steps validate the terraform scripts, plan the changes to perform, and apply the changes respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
+
+This pipeline is triggered only if the environment variable "$PASSWORD_CREATION" is set to true. **Do not** include this variable in the standard variables. Instead, create a new pipeline where you enter the variable so it only applies to that run. Furthermore, this part of the pipeline assumes that your Infisical vault does not have an entry for the secret "MANCALA_PW." If you need to change your password, remove the value manually first.
+
+#### Infrastructure construction
+
+The second part of the pipeline creates the virtual machines. It consists of the terraform-vm-validate, terraform-vm-plan, and terraform-vm-apply steps. These steps validate the terraform scripts, plan the changes to perform, and apply the changes respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
+
+Since this does not rely on any environmental variables to trigger, it runs by default when a change is pushed/merged. If the secret "MANCALA_PW" is missing in your Infisical vault, it will fail. Do not worry too much about that, though. If you run the pipeline to create the password and then re-run, everything should work properly.
+
+It assumes that the "MANCALA_PW" secret is present in your Infisical vault and that there is no existing infrastructure. It will also add the ip addresses of your virtual machines to your Infisical vault under the key "MANCALA_IP_<number>" and assumes that those keys are not occupied upon creation.
+
+#### Infrastructure destruction
+
+The third part of the pipeline destroys existing virtual machines. It consists of the terraform-vm-validate and terraform-vm-destroy steps. These steps validate the terraform scripts and destroy the existing infrastructure respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
+
+This pipeline only runs with the "$DESTROY_ENABLED" variable set to true. **Do not** include this variable in the standard variables. Instead, create a new pipeline where you enter the variable so it only applies to that run.
+
+The destruction of the existing infrastructure will remove the terraform state files stored in gitlab (see `backend.tf`), but also remove the IP addresses from your Infisical vault. Your password is not affected, however.
+
+#### Authentification through environment variables
 
 You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), and a public key to enable connecting to your VMs. You need the following environment variables with their respective values:
 
