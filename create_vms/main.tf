@@ -53,12 +53,8 @@ resource "vsphere_virtual_machine" "vm" {
 
       # Contains a newline seperated string containing an SSH public key that is allowed
       # to login into the 'ubuntu' user. Format matches authorized_keys files.
-      public-keys = data.infisical_secrets.common_secrets.secrets[format("SSHKEY_%02d", count.index + 1)].value
-      # ^ in reality, this is not best practice. This is only done to show that you can enable different machines
-      # accessing the VM by specifying which token(s) you want where. I have not found a way to parse multiple
-      # tokens to a single machine, as this parameter does not accept a list of strings (despite the name implying
-      # that multitudes are allowed)
-
+      public-keys = data.infisical_secrets.common_secrets.secrets["SSHKEY_01"].value
+      public-keys = data.infisical_secrets.common_secrets.secrets["SSHKEY_02"].value
 
       # User data contains a cloud-init configuration file. This file is passed to the template
       # where cloud-init runs at first boot and can modify default users/software etc
