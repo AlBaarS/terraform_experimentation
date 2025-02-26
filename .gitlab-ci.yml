@@ -79,7 +79,7 @@ terraform-tk-apply:
   rules:
     - if: $DESTROY_ENABLED
       when: never
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $GENERATE_TOKEN
+    - if: $GENERATE_TOKEN
       when: manual
 
 # This step validates the terraform files of the VM creation process
