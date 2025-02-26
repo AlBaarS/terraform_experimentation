@@ -74,7 +74,7 @@ terraform-tk-apply:
   - terraform-tk-plan
   script:
     - cd "${TF_TK_CREATION_ROOT}"
-    - terraform init -input=false -reconfigure && terraform apply $TF_TK_VARS -input=false
+    - terraform init -input=false -reconfigure && terraform apply $TF_TK_VARS -input=false -auto-approve
   resource_group: default
   rules:
     - if: $DESTROY_ENABLED
