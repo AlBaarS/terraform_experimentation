@@ -9,9 +9,6 @@ variables:
 
 cache:
   # Only cache the .terraform folder across each job in this pipeline for the same commit
-  key: ${CI_COMMIT_SHA}-pw
-  paths:
-    - set_password/.terraform
   key: ${CI_COMMIT_SHA}-vm
   paths:
     - create_vms/.terraform
@@ -32,7 +29,7 @@ terraform-vm-validate:
     entrypoint: [""]
   script:
     - cd "${TF_VM_CREATION_ROOT}"
-    - terraform init -input=false -backend-config=password=${CI_JOB_TOKEN} -reconfigure && terraform validate
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform validate
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
@@ -52,7 +49,7 @@ terraform-vm-plan:
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
     - cd "${TF_VM_CREATION_ROOT}"
-    - terraform init -input=false -backend-config=password=${CI_JOB_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VM_VARS
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VM_VARS
     - terraform show --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
@@ -80,7 +77,7 @@ terraform-vm-apply:
   - terraform-vm-plan
   script:
     - cd "${TF_VM_CREATION_ROOT}"
-    - terraform init -input=false -backend-config=password=${CI_JOB_TOKEN} -reconfigure && terraform apply $TF_VM_VARS -input=false plan.cache
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_VM_VARS -input=false plan.cache
   resource_group: default
   rules:
     - if: $DESTROY_ENABLED
@@ -97,7 +94,7 @@ terraform-vm-destroy:
     entrypoint: [""]
   script:
     - cd "${TF_VM_CREATION_ROOT}"
-    - terraform init -input=false -backend-config=password=${CI_JOB_TOKEN} -reconfigure && terraform destroy $TF_VM_VARS -input=false -auto-approve
+    - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform destroy $TF_VM_VARS -input=false -auto-approve
   resource_group: default
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DESTROY_ENABLED
