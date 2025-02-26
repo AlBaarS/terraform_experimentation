@@ -18,37 +18,27 @@ The meat and bones of this README - a summary of my findings so far. Each file a
 
 ### Gitlab-ci.yml
 
-This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. It contains three pipelines in one; one that creates and stores a password in an Infisical vault, one that creates and launches the virtual machines on Daan's cluster, and one to tear the existing infrastructure down.
-
-#### Password creation
-
-The first part of the pipeline creates and stores a secure password for you. It consists of the terraform-pw-validate, terraform-pw-plan, and terraform-pw-apply steps. These steps validate the terraform scripts, plan the changes to perform, and apply the changes respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
-
-This pipeline is triggered only if the environment variable "$PASSWORD_CREATION" is set to true. **Do not** include this variable in the standard variables. Instead, create a new pipeline where you enter the variable so it only applies to that run. Furthermore, this part of the pipeline assumes that your Infisical vault does not have an entry for the secret "MANCALA_PW." If you need to change your password, remove the value manually first.
+This YAML file takes care of the pipeline to validate and launch the vsphere cluster using Terraform. It contains two pipelines; one that plans and launches the VM's on Daan's kubernetes cluster and one to destroy it.
 
 #### Infrastructure construction
 
-The second part of the pipeline creates the virtual machines. It consists of the terraform-vm-validate, terraform-vm-plan, and terraform-vm-apply steps. These steps validate the terraform scripts, plan the changes to perform, and apply the changes respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
+The first part of the pipeline creates the virtual machines. It consists of the terraform-vm-validate, terraform-vm-plan, and terraform-vm-apply steps. These steps validate the terraform scripts, plan the changes to perform, and apply the changes respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
 
-Since this does not rely on any environmental variables to trigger, it runs by default when a change is pushed/merged. If the secret "MANCALA_PW" is missing in your Infisical vault, it will fail. Do not worry too much about that, though. If you run the pipeline to create the password and then re-run, everything should work properly.
+Since this does not rely on any environmental variables to trigger, it runs by default when a change is pushed/merged. It assumes you have
 
-It assumes that the "MANCALA_PW" secret is present in your Infisical vault and that there is no existing infrastructure. It will also add the ip addresses of your virtual machines to your Infisical vault under the key "MANCALA_IP_<number>" and assumes that those keys are not occupied upon creation.
+It will add the ip addresses of your virtual machines to your Infisical vault under the key "VM_IP_<number>" and assumes that those keys are not occupied upon creation.
 
 #### Infrastructure destruction
 
-The third part of the pipeline destroys existing virtual machines. It consists of the terraform-vm-validate and terraform-vm-destroy steps. These steps validate the terraform scripts and destroy the existing infrastructure respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
+The thsecondird part of the pipeline destroys existing virtual machines. It consists of the terraform-vm-validate and terraform-vm-destroy steps. These steps validate the terraform scripts and destroy the existing infrastructure respectively. The apply step needs manual activation in gitlab CI/CD pipelines.
 
 This pipeline only runs with the "$DESTROY_ENABLED" variable set to true. **Do not** include this variable in the standard variables. Instead, create a new pipeline where you enter the variable so it only applies to that run.
 
-The destruction of the existing infrastructure will remove the terraform state files stored in gitlab (see `backend.tf`), but also remove the IP addresses from your Infisical vault. Your password is not affected, however.
+The destruction of the existing infrastructure will remove the terraform state files stored in gitlab (see `backend.tf`), but also remove the IP addresses from your Infisical vault. Other secrets stored in the vault are not affected.
 
 #### Authentification through environment variables
 
-You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), Infisical (to access your VM password and IPs), and a public key to enable connecting to your VMs. You need the following environment variables with their respective values:
-
-* **TF_VAR_public_key** --> the public key. Can be found in your home directory on linux under `.ssh/id_ed25519.pub`. In this variable, you must only include the middle part of random numbers and letters.
-
-* **TF_VAR_email** --> your e-mail, which is passed as part of the public key.
+You also need to pass on authentification for gitlab (to store the Terraform state), VSphere (to access your cluster), and Infisical (to access your VM password and IPs). You need the following environment variables with their respective values:
 
 * **INFISICAL_CID** --> your Infisical Universal Auth client ID
 
@@ -60,9 +50,7 @@ You also need to pass on authentification for gitlab (to store the Terraform sta
 
 * **VSPHERE_PASSWORD** --> your VSphere password.
 
-* **GITLAB_ACCESS_TOKEN** --> A gitlab access token with API access only.
-
-All variables must be **Masked and Hidden** and only run on **Protected** branches. This means that they will be unavailable when you test things on a testing branch. Make sure to mark your testing branches as **Protected** as well to keep your information secure.
+All variables must be **Masked and Hidden**.
 
 ### Terraform
 

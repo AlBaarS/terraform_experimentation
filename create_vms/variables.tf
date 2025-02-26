@@ -4,16 +4,6 @@ variable "hosts" {
 }
 
 # -[Input variables]-----------------------------------------------------------
-variable "public_key" {
-  type = string
-  sensitive = true
-}
-
-variable "email" {
-  type = string
-  sensitive = true
-}
-
 variable "vsphere_user" {
   type = string
   sensitive = true
