@@ -52,8 +52,7 @@ resource "vsphere_virtual_machine" "vm" {
 
       # Contains a newline seperated string containing an SSH public key that is allowed
       # to login into the 'ubuntu' user. Format matches authorized_keys files.
-      # public-keys = "ssh-ed25519 ${var.public_key} ${var.email}"
-      # ^ moved to cloud_init.cfg for testing
+      public-keys = "ssh-ed25519 ${var.public_key} ${var.email}"
 
       # User data contains a cloud-init configuration file. This file is passed to the template
       # where cloud-init runs at first boot and can modify default users/software etc
