@@ -1,7 +1,6 @@
 variables:
   TF_PW_CREATION_ROOT: ${CI_PROJECT_DIR}/set_password
   TF_VM_CREATION_ROOT: ${CI_PROJECT_DIR}/create_vms
-  TF_PW_VARS: -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   TF_VM_VARS: -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
