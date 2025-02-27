@@ -1,8 +1,3 @@
-# -[Variables upon initialization]---------------------------------------------
-variable "hosts" {
-  default = 2
-}
-
 # -[Input variables]-----------------------------------------------------------
 variable "infisical_client_id" {
   type = string

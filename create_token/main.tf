@@ -8,7 +8,6 @@ resource "tls_private_key" "rsa-4096-private" {
 
 # Save the generated ssh keypair to Infisical
 resource "infisical_secret" "store-public-key-secret" {
-  count        = var.hosts
   name         = "VM_KEY_PUBLIC"
   value        = tls_private_key.rsa-4096-private.public_key_openssh
   env_slug     = "dev"
@@ -17,7 +16,6 @@ resource "infisical_secret" "store-public-key-secret" {
 }
 
 resource "infisical_secret" "store-private-key-secret" {
-  count        = var.hosts
   name         = "VM_KEY_PRIVATE"
   value        = tls_private_key.rsa-4096-private.private_key_openssh
   env_slug     = "dev"

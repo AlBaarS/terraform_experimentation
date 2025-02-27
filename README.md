@@ -1,4 +1,4 @@
-# Mancala terraform ![status](https://git.sogyo.nl/abaars/mancala-terraform/badges/main/pipeline.svg?ignore_skipped=true)
+# Terraform Testing ![status](https://git.sogyo.nl/abaars/mancala-terraform/badges/main/pipeline.svg?ignore_skipped=true)
 
 ## What is this project for?
 
