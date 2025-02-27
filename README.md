@@ -26,7 +26,7 @@ The first part of the pipeline creates a secure ssh key and sends it off to an I
 
 The terraform script creates a random ssh key-pair with RSA encryption (4096 bits) and send the public and private keys to an Infisical vault under the keys `VM_KEY_PUBLIC` and `VM_KEY_PRIVATE` respectively.
 
-This pipeline only runs with the environment variable `$CREATE_TOKEN` set to true. Do not include this variable in the standard CI/CD variables. Instead, create a new pipeline where you enter the variable so it only applies to that run.
+This pipeline only runs with the environment variable `$GENERATE_TOKEN` set to true. Do not include this variable in the standard CI/CD variables. Instead, create a new pipeline where you enter the variable so it only applies to that run.
 
 ### Infrastructure construction
 
