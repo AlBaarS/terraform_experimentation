@@ -1,6 +1,7 @@
 variables:
-  TF_PW_CREATION_ROOT: ${CI_PROJECT_DIR}/set_password
+  TF_TK_CREATION_ROOT: ${CI_PROJECT_DIR}/create_token
   TF_VM_CREATION_ROOT: ${CI_PROJECT_DIR}/create_vms
+  TF_TK_VARS: -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   TF_VM_VARS: -var=vsphere_user=$VSPHERE_USER -var=vsphere_pw=$VSPHERE_PASSWORD -var=infisical_client_id=$INFISICAL_CID -var=infisical_client_secret=$INFISICAL_CS -var=infisical_workspace_id=$INFISICAL_PID
   ANS_ROOT: ${CI_PROJECT_DIR}/ansible
   DOCKER_TF: hashicorp/terraform:1.10.5
@@ -13,12 +14,73 @@ cache:
     - create_vms/.terraform
 
 stages:
+  - terraform-tk-validate
+  - terraform-tk-plan
+  - terraform-tk-apply
   - terraform-vm-validate
   - terraform-vm-plan
   - terraform-vm-apply
   - terraform-vm-destroy
 
 
+
+# [Requires $GENERATE_TOKEN] - This step validates the terraform files of the token creation process
+terraform-tk-validate:
+  stage: terraform-tk-validate
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  script:
+    - cd "${TF_TK_CREATION_ROOT}"
+    - terraform init -input=false -reconfigure && terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $CI_COMMIT_BRANCH && $GENERATE_TOKEN
+
+
+# [Requires $GENERATE_TOKEN] - This step creates the plan of action to set up the tokens
+terraform-tk-plan:
+  stage: terraform-tk-plan
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  before_script:
+    - apk --no-cache add jq
+    - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  script:
+    - cd "${TF_TK_CREATION_ROOT}"
+    - terraform init -input=false -reconfigure && terraform plan -input=false -out=plan.cache $TF_TK_VARS
+  resource_group: default
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $CI_COMMIT_BRANCH && $GENERATE_TOKEN
+
+
+# [Requires $GENERATE_TOKEN] - This step adds a manual pipeline step to deploy the tokens
+terraform-tk-apply:
+  stage: terraform-tk-apply
+  image:
+    name: $DOCKER_TF
+    entrypoint: [""]
+  dependencies:
+  - terraform-tk-plan
+  script:
+    - cd "${TF_TK_CREATION_ROOT}"
+    - terraform init -input=false -reconfigure && terraform apply $TF_TK_VARS -input=false -auto-approve
+  resource_group: default
+  rules:
+    - if: $DESTROY_ENABLED
+      when: never
+    - if: $GENERATE_TOKEN
+      when: manual
 
 # This step validates the terraform files of the VM creation process
 terraform-vm-validate:
@@ -33,6 +95,8 @@ terraform-vm-validate:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
     - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
+      when: never
+    - if: $GENERATE_TOKEN
       when: never
     - if: $CI_COMMIT_BRANCH
 
@@ -63,6 +127,8 @@ terraform-vm-plan:
       when: never
     - if: $CI_OPEN_MERGE_REQUESTS  # Don't add it to a *branch* pipeline if it's already in a merge request pipeline.
       when: never
+    - if: $GENERATE_TOKEN
+      when: never
     - if: $CI_COMMIT_BRANCH        # If there's no open merge request, add it to a *branch* pipeline instead.
 
 
@@ -80,6 +146,8 @@ terraform-vm-apply:
   resource_group: default
   rules:
     - if: $DESTROY_ENABLED
+      when: never
+    - if: $GENERATE_TOKEN
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual

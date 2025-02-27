@@ -49,9 +49,7 @@ resource "vsphere_virtual_machine" "vm" {
 
       # Contains a newline seperated string containing an SSH public key that is allowed
       # to login into the 'ubuntu' user. Format matches authorized_keys files.
-      # public-keys = data.infisical_secrets.common_secrets.secrets["SSHKEY_01"].value
-      # public-keys = data.infisical_secrets.common_secrets.secrets["SSHKEY_02"].value
-      # ^ with this, the second key overrides the first (so the first one is not included)
+      public-keys = data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value
 
       # User data contains a cloud-init configuration file. This file is passed to the template
       # where cloud-init runs at first boot and can modify default users/software etc
@@ -62,6 +60,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
 }
 
+# Save the IP addresses of the generated VMs to Infisical
 resource "infisical_secret" "store-ip-secret" {
   count        = var.hosts
   name         = format("VM_IP_%02d", count.index + 1)
