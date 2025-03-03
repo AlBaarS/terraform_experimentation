@@ -41,3 +41,13 @@ data "infisical_secrets" "common_secrets" {
   workspace_id = var.infisical_workspace_id
   folder_path  = "/"
 }
+
+# Injecting variables into the cloud_init.cfg file
+data template_file "metadataconfig" {
+  # Main cloud-config configuration file.
+  template = file("cloud_init.cfg")
+  vars = {
+    user = "ansible"
+    public_key = "${data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value}"
+  }
+}
