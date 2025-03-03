@@ -47,7 +47,7 @@ data template_file "metadataconfig" {
   # Main cloud-config configuration file.
   template = file("cloud_init.cfg")
   vars = {
-    user = "ansible"
+    user = "ubuntu"
     public_key = "${data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value}"
   }
 }
