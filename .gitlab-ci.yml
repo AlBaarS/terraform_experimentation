@@ -10,7 +10,8 @@ variables:
 cache:
   key: ${CI_COMMIT_SHA}-vm
   paths:
-    - create_vms/.terraform
+    - create_vms/.terraform/
+    - create_vms/*.ova
 
 stages:
   - terraform-tk-validate
@@ -145,6 +146,11 @@ terraform-vm-apply:
     - cd "${TF_VM_CREATION_ROOT}"
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_VM_VARS -input=false plan.cache
   resource_group: default
+  cache:
+    key: ${CI_COMMIT_SHA}-vm
+    policy: pull
+    paths:
+      - create_vms/*.ova
   rules:
     - if: $DESTROY_ENABLED
       when: never
