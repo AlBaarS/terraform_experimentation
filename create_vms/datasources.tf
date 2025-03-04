@@ -43,11 +43,11 @@ data "infisical_secrets" "common_secrets" {
 }
 
 # Injecting variables into the cloud_init.cfg file
-data template_file "metadataconfig" {
-  # Main cloud-config configuration file.
-  template = file("cloud_init.cfg")
-  vars = {
-    user = "ubuntu"
-    public_key = "${data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value}"
-  }
-}
+# data template_file "metadataconfig" {
+#   # Main cloud-config configuration file.
+#   template = file("cloud_init.cfg")
+#   vars = {
+#     user = "ubuntu"
+#     public_key = "${data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value}"
+#   }
+# }

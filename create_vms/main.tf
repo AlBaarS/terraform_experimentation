@@ -67,7 +67,15 @@ resource "vsphere_virtual_machine" "vm" {
       # where cloud-init runs at first boot and can modify default users/software etc
       # for now we only use it to not let the default passwords expire so we can instantly
       # login to the VMs
-      user-data = base64encode(file("cloud_init.cfg"))
+      user-data = base64encode(
+        templatefile(
+          "cloud_init.cfg", 
+          {
+            user = "ubuntu",
+            public_key = "${data.infisical_secrets.common_secrets.secrets["VM_KEY_PUBLIC"].value}"
+          }
+          )
+      )
     }
   }
 }
