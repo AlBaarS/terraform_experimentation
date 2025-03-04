@@ -6,7 +6,7 @@ resource "vsphere_virtual_machine" "vm" {
   name             = format("minesweeper%02d", count.index + 1)
   resource_pool_id = data.vsphere_resource_pool.on-prem-kubernetes.id
   datastore_id     = data.vsphere_datastore.vs1_hpe_raid10.id
-  # host_system_id   = data.vsphere_host.vs1.id
+  host_system_id   = data.vsphere_host.vs1.id
   num_cpus         = 2
   memory           = 2048
   guest_id         = "ubuntu64Guest"  # this cannot be changed to a different name, sadly
