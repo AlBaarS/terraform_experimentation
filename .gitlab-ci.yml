@@ -10,8 +10,7 @@ variables:
 cache:
   key: ${CI_COMMIT_SHA}-vm
   paths:
-    - create_vms/.terraform/
-    - create_vms/*.ova
+    - create_vms/.terraform
 
 stages:
   - terraform-tk-validate
@@ -120,6 +119,7 @@ terraform-vm-plan:
   artifacts:
     paths:
       - ${TF_VM_CREATION_ROOT}/plan.cache
+      - ${TF_VM_CREATION_ROOT}/noble-server-cloudimg-amd64.ova
     reports:
       terraform: ${TF_VM_CREATION_ROOT}/plan.json
   rules:
@@ -146,11 +146,6 @@ terraform-vm-apply:
     - cd "${TF_VM_CREATION_ROOT}"
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform apply $TF_VM_VARS -input=false plan.cache
   resource_group: default
-  cache:
-    key: ${CI_COMMIT_SHA}-vm
-    policy: pull
-    paths:
-      - create_vms/*.ova
   rules:
     - if: $DESTROY_ENABLED
       when: never
