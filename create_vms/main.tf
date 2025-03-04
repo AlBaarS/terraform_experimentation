@@ -43,7 +43,7 @@ resource "vsphere_virtual_machine" "vm" {
   
   ovf_deploy {
     allow_unverified_ssl_cert = false
-    remote_ovf_url            = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.ova"   # Gets the latest Ubuntu Server 24.04 LTS image in OVA format
+    local_ovf_path            = "noble-server-cloudimg-amd64.ova"   # Uses the latest Ubuntu Server 24.04 LTS image in OVA format, downloaded by gitlab
     disk_provisioning         = "thin"
     ip_protocol               = "IPV4"
     ip_allocation_policy      = "STATIC_MANUAL"   # IP addresses increase each reboot within a manually specified range
