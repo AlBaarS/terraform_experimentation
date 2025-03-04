@@ -111,15 +111,15 @@ terraform-vm-plan:
     - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   script:
     - cd "${TF_VM_CREATION_ROOT}"
-    - apk add curl
-    - curl https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.ova --output noble-server-cloudimg-amd64.ova
+    # - apk add curl
+    # - curl https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.ova --output noble-server-cloudimg-amd64.ova
     - terraform init -input=false -backend-config=password=${GITLAB_ACCESS_TOKEN} -reconfigure && terraform plan -input=false -out=plan.cache $TF_VM_VARS
     - terraform show --json plan.cache | convert_report > plan.json
   resource_group: default
   artifacts:
     paths:
       - ${TF_VM_CREATION_ROOT}/plan.cache
-      - ${TF_VM_CREATION_ROOT}/noble-server-cloudimg-amd64.ova
+      # - ${TF_VM_CREATION_ROOT}/noble-server-cloudimg-amd64.ova
     reports:
       terraform: ${TF_VM_CREATION_ROOT}/plan.json
   rules:

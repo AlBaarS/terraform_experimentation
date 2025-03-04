@@ -6,16 +6,16 @@ resource "vsphere_virtual_machine" "vm" {
   name             = format("minesweeper%02d", count.index + 1)
   resource_pool_id = data.vsphere_resource_pool.on-prem-kubernetes.id
   datastore_id     = data.vsphere_datastore.vs1_hpe_raid10.id
-  host_system_id   = data.vsphere_host.vs1.id
+  # host_system_id   = data.vsphere_host.vs1.id
   num_cpus         = 2
   memory           = 2048
   guest_id         = "ubuntu64Guest"  # this cannot be changed to a different name, sadly
   count            = var.hosts
 
   # We want to make a clone of the Ubuntu 22.04 LTS Cloud Image Template
-  # clone {
-  #   template_uuid = data.vsphere_virtual_machine.ubuntu-2204-cloudimg-template.id
-  # }
+  clone {
+    template_uuid = data.vsphere_virtual_machine.ubuntu-2204-cloudimg-template.id
+  }
   # ^ this will be exchanged for a self created Ubuntu 24.04 image later
 
   # Number of Cores per Socket needs to be set to 0 to let
@@ -41,16 +41,16 @@ resource "vsphere_virtual_machine" "vm" {
     size  = 25
   }
   
-  ovf_deploy {
-    allow_unverified_ssl_cert = false
-    local_ovf_path            = "noble-server-cloudimg-amd64.ova"   # Uses the latest Ubuntu Server 24.04 LTS image in OVA format, downloaded by gitlab
-    disk_provisioning         = "thin"
-    ip_protocol               = "IPV4"
-    ip_allocation_policy      = "STATIC_MANUAL"   # IP addresses increase each reboot within a manually specified range
-    ovf_network_map = {
-      "VM Network" = data.vsphere_network.vm_network.id
-    }
-  }
+  # ovf_deploy {
+  #   allow_unverified_ssl_cert = false
+  #   local_ovf_path            = "noble-server-cloudimg-amd64.ova"   # Uses the latest Ubuntu Server 24.04 LTS image in OVA format, downloaded by gitlab
+  #   disk_provisioning         = "thin"
+  #   ip_protocol               = "IPV4"
+  #   ip_allocation_policy      = "STATIC_MANUAL"   # IP addresses increase each reboot within a manually specified range
+  #   ovf_network_map = {
+  #     "VM Network" = data.vsphere_network.vm_network.id
+  #   }
+  # }
 
   vapp {
     properties = {
