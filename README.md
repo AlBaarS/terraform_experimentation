@@ -6,7 +6,7 @@ This project is made by me as I discover how to work with terraform. Here, I wil
 
 # What does this project do?
 
-It launches two virtual machines (Ubuntu 22.04) on Daan's VSphere instance. That's it, so far. The goal is to deploy my individual project (Minesweeper) onto it.
+It launches two virtual machines (Ubuntu 22.04) on Daan's VSphere instance. In addition, it saves the IP addresses and authentication securely in an Infisical vault. My [Minesweeper](https://git.sogyo.nl/abaars/rusty-minesweeper) individual project can be downloaded onto these virtual machines, but sadly a fully working deployment was not achieved within the timescope ([github](https://github.com/AlBaarS/rusty-minesweeper/tree/addAnsible) link for non-Sogyo users).
 
 # What do you need to know to understand this project?
 

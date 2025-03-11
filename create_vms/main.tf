@@ -41,9 +41,12 @@ resource "vsphere_virtual_machine" "vm" {
     size  = 25
   }
   
+  # The block below does not work due to insufficient permissions - cloning and deploying utilize different API calls
   # ovf_deploy {
   #   allow_unverified_ssl_cert = false
   #   local_ovf_path            = "noble-server-cloudimg-amd64.ova"   # Uses the latest Ubuntu Server 24.04 LTS image in OVA format, downloaded by gitlab
+  #   or, alternatively:
+  #   remote_ovf_url            = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.ova"
   #   disk_provisioning         = "thin"
   #   ip_protocol               = "IPV4"
   #   ip_allocation_policy      = "STATIC_MANUAL"   # IP addresses increase each reboot within a manually specified range
